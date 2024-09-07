@@ -72,7 +72,14 @@ func main() {
 
 		fmt.Printf("Expense added successfully (ID: %d)\n", newId)
 
+	case "list":
 		// TODO: List Expenses
+
+		fmt.Printf("%-3s %-11s %-12s %6s\n\n", "ID", "Date", "Description", "Amount")
+
+		for _, expense := range expenses {
+			fmt.Printf("%-3d %-11s %-12s %6d\n", expense.Id, expense.Date, expense.Description, expense.Amount)
+		}
 		// TODO: Delete expense by Id
 		// TODO: Summerise total Expense
 		// TODO: Summerise total Expense (by Month)
