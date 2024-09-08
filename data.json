@@ -2,8 +2,8 @@
  {
   "id": 1,
   "date": "2024-08-06",
-  "description": "Lunch",
-  "amount": 20
+  "description": "hello",
+  "amount": 50
  },
  {
   "id": 2,
@@ -14,7 +14,7 @@
  {
   "id": 3,
   "date": "2024-09-07",
-  "description": "something",
-  "amount": 50
+  "description": "football",
+  "amount": 100
  }
 ]

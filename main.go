@@ -52,7 +52,13 @@ func main() {
 
 	switch cmd {
 	case "help":
-		println("help - list of commands")
+		fmt.Println("Available commands:")
+		fmt.Println("  list          - List all expenses")
+		fmt.Println("  add           - Add a new expense. Usage: add --description <desc> --amount <amount>")
+		fmt.Println("  delete        - Delete an expense by ID. Usage: delete --id <id>")
+		fmt.Println("  update        - Update an expense by ID. Usage: update --id <id> --description <desc> --amount <amount>")
+		fmt.Println("  summary       - Show total expenses. Use --month <1-12> for a specific month")
+		fmt.Println("  help          - Display available commands")
 
 	case "list":
 		fmt.Printf("%-3s %-11s %-12s %6s\n\n", "ID", "Date", "Description", "Amount")
@@ -66,6 +72,11 @@ func main() {
 		descPtr := addCmd.String("description", "description", "expense description")
 		amountPtr := addCmd.Int("amount", 0, "expense amount")
 		addCmd.Parse(os.Args[2:])
+
+		if *amountPtr <= 0 {
+			fmt.Println("Invalid amount. Please enter a positive value.")
+			return
+		}
 
 		var newId int
 
@@ -103,11 +114,24 @@ func main() {
 
 		deleteCmd.Parse(os.Args[2:])
 
+		if *idPtr <= 0 {
+			fmt.Println("Invalid ID. Please enter a positive integer.")
+			return
+		}
+
+		found := false
+
 		for i, expense := range expenses {
 			if expense.Id == *idPtr {
 				expenses = slices.Delete(expenses, i, i+1)
+				found = true
 				break
 			}
+		}
+
+		if !found {
+			fmt.Println("Expense not found")
+			return
 		}
 
 		updatedData, err := json.MarshalIndent(expenses, "", " ")
@@ -156,6 +180,45 @@ func main() {
 		}
 
 		fmt.Printf("Total expenses for %s: $%d\n", months[*monthPtr], count)
+
+	case "update":
+		updateCmd := flag.NewFlagSet("update", flag.ExitOnError)
+		idPtr := updateCmd.Int("id", 0, "expense id")
+		descriptionPtr := updateCmd.String("description", "", "expense description")
+		amountPtr := updateCmd.Int("amount", 0, "expense amount")
+		updateCmd.Parse(os.Args[2:])
+
+		if *descriptionPtr == "" || *amountPtr <= 0 {
+			fmt.Println("Invalid description or amount. Please provide valid values.")
+			return
+		}
+
+		found := false
+		for i, expense := range expenses {
+			if expense.Id == *idPtr {
+				expenses[i].Description = *descriptionPtr
+				expenses[i].Amount = *amountPtr
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			fmt.Println("Expense not found")
+			return
+		}
+
+		updatedData, err := json.MarshalIndent(expenses, "", " ")
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.WriteFile("./data.json", updatedData, 0600)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Expense updated successfully (ID: %d)\n", *idPtr)
 
 	}
 }
