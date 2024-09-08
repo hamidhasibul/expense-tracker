@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"time"
 )
 
@@ -37,6 +38,14 @@ func main() {
 	switch cmd {
 	case "help":
 		println("help - list of commands")
+
+	case "list":
+		fmt.Printf("%-3s %-11s %-12s %6s\n\n", "ID", "Date", "Description", "Amount")
+
+		for _, expense := range expenses {
+			fmt.Printf("%-3d %-11s %-12s %6d\n", expense.Id, expense.Date, expense.Description, expense.Amount)
+		}
+
 	case "add":
 		addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 		descPtr := addCmd.String("description", "description", "expense description")
@@ -72,15 +81,32 @@ func main() {
 
 		fmt.Printf("Expense added successfully (ID: %d)\n", newId)
 
-	case "list":
-		// TODO: List Expenses
-
-		fmt.Printf("%-3s %-11s %-12s %6s\n\n", "ID", "Date", "Description", "Amount")
-
-		for _, expense := range expenses {
-			fmt.Printf("%-3d %-11s %-12s %6d\n", expense.Id, expense.Date, expense.Description, expense.Amount)
-		}
+	case "delete":
 		// TODO: Delete expense by Id
+
+		deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
+		idPtr := deleteCmd.Int("id", 0, "expense id")
+
+		deleteCmd.Parse(os.Args[2:])
+
+		for i, expense := range expenses {
+			if expense.Id == *idPtr {
+				expenses = slices.Delete(expenses, i, i+1)
+				break
+			}
+		}
+
+		updatedData, err := json.MarshalIndent(expenses, "", " ")
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.WriteFile("./data.json", updatedData, 0644)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Expense deleted successfully")
 		// TODO: Summerise total Expense
 		// TODO: Summerise total Expense (by Month)
 
