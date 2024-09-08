@@ -30,6 +30,21 @@ func main() {
 		panic(err)
 	}
 
+	months := map[int]string{
+		1:  "January",
+		2:  "February",
+		3:  "March",
+		4:  "April",
+		5:  "May",
+		6:  "June",
+		7:  "July",
+		8:  "August",
+		9:  "September",
+		10: "October",
+		11: "November",
+		12: "December",
+	}
+
 	if len(os.Args) < 2 {
 		panic("commands required. Use \"help\" to get the list of commands")
 	}
@@ -82,7 +97,6 @@ func main() {
 		fmt.Printf("Expense added successfully (ID: %d)\n", newId)
 
 	case "delete":
-		// TODO: Delete expense by Id
 
 		deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 		idPtr := deleteCmd.Int("id", 0, "expense id")
@@ -107,8 +121,41 @@ func main() {
 		}
 
 		fmt.Println("Expense deleted successfully")
-		// TODO: Summerise total Expense
-		// TODO: Summerise total Expense (by Month)
+
+	case "summary":
+
+		sumCmd := flag.NewFlagSet("summary", flag.ExitOnError)
+		monthPtr := sumCmd.Int("month", 0, "expense month")
+		sumCmd.Parse(os.Args[2:])
+		count := 0
+
+		if *monthPtr < 0 || *monthPtr > 12 {
+			fmt.Println("Invalid month. Please enter a value between 1 and 12.")
+			return
+		}
+
+		if *monthPtr == 0 {
+			for _, expense := range expenses {
+				count += expense.Amount
+			}
+			fmt.Printf("Total expenses: $%d\n", count)
+			return
+		}
+
+		for _, expense := range expenses {
+			t, err := time.Parse("2006-01-02", expense.Date)
+			if err != nil {
+				panic(err)
+			}
+
+			expenseMonth := t.Month()
+
+			if *monthPtr == int(expenseMonth) {
+				count += expense.Amount
+			}
+		}
+
+		fmt.Printf("Total expenses for %s: $%d\n", months[*monthPtr], count)
 
 	}
 }
